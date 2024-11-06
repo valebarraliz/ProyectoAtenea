@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules\Password;
 
 class PasswordController extends Controller
@@ -13,6 +14,9 @@ class PasswordController extends Controller
     /**
      * Update the user's password.
      */
+    public function index(){
+        return Inertia::render('Auth/UpdatePassword');
+    }
     public function update(Request $request): RedirectResponse
     {
         $validated = $request->validate([
