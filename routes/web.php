@@ -1,11 +1,12 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\PartyController;
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Application;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\PartyController;
+use App\Http\Controllers\ProfileController;
 
 
 Route::get('/', function () {
@@ -19,6 +20,7 @@ Route::get('/', function () {
 
 Route::get('/dashboard', [RoleController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 Route::post('/party', [PartyController::class, 'store'])->name('party.store');
+Route::post('/user', [UserController::class, 'store'])->name('user.store');
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

@@ -12,11 +12,18 @@ export default function Dashboard({ parties }) {
         description: "",
         image: null,
     });
-
+    const UserForm = useForm({
+        file: null,
+    });
     const submit = (e) => {
         e.preventDefault();
 
         post(route("party.store"));
+    };
+    const submitUsers = (e) => {
+        e.preventDefault();
+
+        UserForm.post(route("user.store"));
     };
     return (
         <AuthenticatedLayout
@@ -114,6 +121,29 @@ export default function Dashboard({ parties }) {
                             <PrimaryButton
                                 className="ms-4"
                                 disabled={processing}
+                            >
+                                Log in
+                            </PrimaryButton>
+                        </form>
+                        <form onSubmit={submitUsers}>
+                            <div>
+                                <InputLabel htmlFor="csv" value="CSV" />
+                                <input
+                                    type="file"
+                                    name="csv"
+                                    id="csv"
+                                    onChange={(e) =>
+                                        UserForm.setData("file", e.target.files[0])
+                                    }
+                                />
+                                <InputError
+                                    message={UserForm.errors.file}
+                                    className="mt-2"
+                                />
+                            </div>
+                            <PrimaryButton
+                                className="ms-4"
+                                disabled={UserForm.processing}
                             >
                                 Log in
                             </PrimaryButton>
