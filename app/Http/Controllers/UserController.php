@@ -18,36 +18,37 @@ class UserController extends Controller
 
         $file = $request->file('file');
         $fileContents = file($file->getPathname());
-
-        // Leer la primera fila para obtener el encabezado y determinar las posiciones de cada columna
         $header = str_getcsv(array_shift($fileContents));
         $nameIndex = array_search('nombre', $header);
         $cedulaIndex = array_search('cedula', $header);
 
-        // Iniciar la transacción
         DB::beginTransaction();
 
         try {
             foreach ($fileContents as $line) {
                 $data = str_getcsv($line);
-
-                User::create([
-                    'name' => $data[$nameIndex],
-                    'citizen_number' => $data[$cedulaIndex],
-                    'password' => Hash::make($data[$cedulaIndex])
-                ]);
+                try {
+                    User::create([
+                        'name' => $data[$nameIndex],
+                        'citizen_number' => $data[$cedulaIndex],
+                        'password' => Hash::make($data[$cedulaIndex])
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    if ($e->getCode() == 23000) {
+                        throw new \Exception("El usuario con cédula " . $data[$cedulaIndex] . " ya está registrado.");
+                    } else {
+                        throw $e;
+                    }
+                }
             }
 
-            // Confirmar la transacción
             DB::commit();
 
             return to_route('dashboard')->with('success', 'Archivo importado exitosamente.');
         } catch (\Exception $e) {
-            // Revertir la transacción en caso de error
             DB::rollBack();
 
             return back()->withErrors(['file' => 'Error al importar el archivo: ' . $e->getMessage()]);
         }
     }
-   
 }
