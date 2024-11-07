@@ -1,7 +1,12 @@
 import { Head, Link } from "@inertiajs/react";
 import BarsChart from "@/Components/BarsChart";
 
-export default function Welcome({ auth, laravelVersion, phpVersion, voteList }) {
+export default function Welcome({
+    auth,
+    laravelVersion,
+    phpVersion,
+    voteList,
+}) {
     const handleImageError = () => {
         document
             .getElementById("screenshot-container")
@@ -73,7 +78,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion, voteList }) 
                                             className="flex items-start gap-6 lg:flex-col"
                                         >
                                             <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16"></div>
-                                            <BarsChart data={voteList}/>
+                                            <BarsChart data={voteList} />
                                         </div>
                                     </div>
                                 </a>

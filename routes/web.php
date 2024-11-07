@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 
 
 Route::get('/', [VoteController::class,'index'])->name('welcome');
+Route::post('/vote', [VoteController::class,'store'])->name('vote.store');
 
 Route::get('/dashboard', [RoleController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 Route::post('/party', [PartyController::class, 'store'])->name('party.store');
