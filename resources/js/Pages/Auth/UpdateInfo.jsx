@@ -6,7 +6,7 @@ import GuestLayout from "@/Layouts/GuestLayout";
 import { Head, useForm } from "@inertiajs/react";
 
 export default function ForgotPassword({ status }) {
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         email: "",
         email_confirmation: "",
         password: '',
@@ -16,7 +16,7 @@ export default function ForgotPassword({ status }) {
     const submit = (e) => {
         e.preventDefault();
 
-        post(route("password"));
+        put(route("info.update"));
     };
 
     return (
@@ -108,7 +108,7 @@ export default function ForgotPassword({ status }) {
                 </div>
                 <div className="mt-4 flex items-center justify-end">
                     <PrimaryButton className="ms-4" disabled={processing}>
-                        Email Password Reset Link
+                        Save
                     </PrimaryButton>
                 </div>
             </form>

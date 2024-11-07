@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             'role_id' => 1,
             'password' => Hash::make('@dmin3duvot3'),
             'email' => 'admin@eduvote.com',
-            'force_password_reset' => true,
+            'force_password_reset' => false,
         ]);
         User::create([
             'citizen_number' => '22223333',

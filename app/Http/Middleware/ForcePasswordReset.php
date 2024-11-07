@@ -16,9 +16,9 @@ class ForcePasswordReset
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && !Auth::user()->force_password_reset) {
-            if (!$request->is('update-password')) {
-                return redirect()->route('password');
+        if (Auth::check() && Auth::user()->force_password_reset) {
+            if (!$request->is('update-info')) {
+                return redirect()->route('info');
             }
         }
         return $next($request);
