@@ -34,13 +34,21 @@ class VoteController extends Controller
         ]);
     }
     public function store(Request $request){
+        $request->validate([
+            'party_id'=>['required','integer','exists:parties,id']
+        ]);
+        if(count($request->user()->vote)){
+            if(!$request->user()->vote->last()->discarded){
+               return redirect()->back()->with('error', 'You have voted');
+            }
+        }
         $vote = Vote::create([
-            'user_id' => $request->user_id,
+            'user_id' => $request->user()->id,
             'party_id' => $request->party_id,
         ]);
         $partyName = $vote->party->name;
         $voteCount = Vote::where('party_id', $request->party_id)->count();
         event(new VoteCast($request->party_id, $partyName, $voteCount));
-        return response()->json(['success' => true]);
+        return redirect()->intended(route('dashboard'));;
     }
 }

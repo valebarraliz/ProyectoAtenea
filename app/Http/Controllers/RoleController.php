@@ -19,7 +19,10 @@ class RoleController extends Controller
                         'parties' => $parties,
                     ]);
                 case 2:
-                    return Inertia::render('User/Dashboard');
+                    $parties = Party::all();
+                    return Inertia::render('User/Dashboard', [
+                        'parties' => $parties,
+                    ]);
                 default:
                     return redirect()->back()->with('error', 'Unauthorized');
             }
