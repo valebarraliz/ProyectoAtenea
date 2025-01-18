@@ -8,7 +8,7 @@ export default function Dashboard({ parties }) {
     });
 
     const submit = (e) => {
-        setData("party_id", e);
+        setData("party_id", e.id);
         post(route("vote.store"));
     };
     return (
@@ -27,7 +27,6 @@ export default function Dashboard({ parties }) {
                         <div className="p-6 text-gray-900">
                             <Cards
                                 data={parties}
-                                isClickable
                                 onClick={submit}
                             />
                         </div>

@@ -12,7 +12,9 @@ use App\Http\Controllers\ProfileController;
 Route::get('/', [VoteController::class,'index'])->name('welcome');
 
 Route::get('/dashboard', [RoleController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
-Route::post('/party', [PartyController::class, 'store'])->name('party.store');
+Route::post('/party-store', [PartyController::class, 'store'])->name('party.store');
+Route::post('/party-update', [PartyController::class, 'update'])->name('party.update');
+Route::delete('/party-delete', [PartyController::class, 'delete'])->name('party.delete');
 Route::post('/user', [UserController::class, 'store'])->name('user.store');
 Route::middleware('auth')->group(function () {
     Route::post('/vote', [VoteController::class,'store'])->name('vote.store');

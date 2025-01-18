@@ -16,7 +16,7 @@ class RoleController extends Controller
                 case 1:
                     $parties = Party::all();
                     return Inertia::render('Admin/Dashboard', [
-                        'parties' => $parties,
+                        'parties' => $parties
                     ]);
                 case 2:
                     $parties = Party::all();

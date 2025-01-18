@@ -44,7 +44,7 @@ export default forwardRef(function ImageInput(
                 <img
                     src={preview}
                     alt="Preview"
-                    className="mt-2 w-full h-auto max-h-60 object-cover rounded-md shadow-sm"
+                    className="mt-2 w-full h-auto max-h-60 object-scale-down rounded-md shadow-sm"
                 />
             )}
         </div>

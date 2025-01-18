@@ -1,30 +1,63 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import InputError from "@/Components/InputError";
+import { Head, useForm } from "@inertiajs/react";
+import Cards from "@/Components/Cards";
+import StoreParty from "./Partials/StoreParty";
+import DragNDrop from "@/Components/DragNDrop";
 import InputLabel from "@/Components/InputLabel";
+import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
-import FileInput from "@/Components/FileInput";
-import TextInput from "@/Components/TextInput";
-import { Head, Link, useForm } from "@inertiajs/react";
+import Modal from "@/Components/Modal";
+import { useState } from "react";
 
 export default function Dashboard({ parties }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const [show, setShow] = useState(false);
+    // Formularios
+    const partyForm = useForm({
+        id: "",
         name: "",
         description: "",
         image: null,
     });
-    const UserForm = useForm({
+
+    const userForm = useForm({
         file: null,
     });
-    const submit = (e) => {
-        e.preventDefault();
 
-        post(route("party.store"));
-    };
-    const submitUsers = (e) => {
-        e.preventDefault();
+    const partyDeleteForm = useForm({ id: "" });
 
-        UserForm.post(route("user.store"));
+    // Función para manejar la selección de una fiesta
+    const handlePartySelect = (party) => {
+        partyForm.setData({
+            id: party.id,
+            name: party.name,
+            description: party.description,
+            image: party.image,
+        });
     };
+
+    // Función para manejar la eliminación de una fiesta
+    const handlePartyDelete = (partyId) => {
+        partyDeleteForm.setData({ id: partyId });
+        partyDeleteForm.delete(route("party.delete"));
+    };
+
+    // Función para enviar el formulario de fiesta
+    const handlePartySubmit = (e) => {
+        e.preventDefault();
+        const routeName = partyForm.data.id ? "party.update" : "party.store";
+        const successCallback = () => partyForm.reset();
+
+        partyForm.post(route(routeName), { onSuccess: successCallback });
+    };
+
+    // Función para enviar el formulario de usuarios
+    const handleUserSubmit = (e) => {
+        e.preventDefault();
+        userForm.post(route("user.store"), {
+            onSuccess: () => userForm.reset(),
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -38,94 +71,32 @@ export default function Dashboard({ parties }) {
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            You're logged in as Admin!
-                        </div>
-                        <div>
-                            <h1>Lista de Parties</h1>
-                            <ul>
-                                {parties.map((party) => (
-                                    <div key={party.id}>
-                                        <li>{party.name}</li>
-                                        <li>{party.description}</li>
-                                        <img src={`/storage/${party.image}`} />
-                                    </div>
-                                ))}
-                            </ul>
-                        </div>
-                        <form onSubmit={submit}>
-                            <div>
-                                <InputLabel htmlFor="name" value="Name" />
-
-                                <TextInput
-                                    id="name"
-                                    type="text"
-                                    name="name"
-                                    value={data.name}
-                                    className="mt-1 block w-full"
-                                    isFocused={true}
-                                    onChange={(e) =>
-                                        setData("name", e.target.value)
-                                    }
-                                />
-
-                                <InputError
-                                    message={errors.name}
-                                    className="mt-2"
-                                />
-                            </div>
-                            <div>
-                                <InputLabel
-                                    htmlFor="description"
-                                    value="Description"
-                                />
-
-                                <TextInput
-                                    id="description"
-                                    type="text"
-                                    name="description"
-                                    value={data.description}
-                                    className="mt-1 block w-full"
-                                    isFocused={true}
-                                    onChange={(e) =>
-                                        setData("description", e.target.value)
-                                    }
-                                />
-
-                                <InputError
-                                    message={errors.description}
-                                    className="mt-2"
-                                />
-                            </div>
-                            <div>
-                                <InputLabel htmlFor="image" value="Image" />
-                                {/* <FileInput
-                                    id="image"
-                                    name="image"
-                                    value={data.image}
-                                    className="mt-1 block w-full"
-                                /> */}
-                                <input
-                                    type="file"
-                                    name="image"
-                                    id="image"
-                                    onChange={(e) =>
-                                        setData("image", e.target.files[0])
-                                    }
-                                />
-                                <InputError
-                                    message={errors.image}
-                                    className="mt-2"
-                                />
-                            </div>
-                            <PrimaryButton
-                                className="ms-4"
-                                disabled={processing}
+                        <div className="p-2">
+                            <button
+                                onClick={() => setShow(!show)}
+                                className="p-2 bg-red-200 cursor-pointer"
                             >
-                                Log in
-                            </PrimaryButton>
+                                ClickOnME
+                            </button>
+                            {/* Componente de tarjetas */}
+                            <Cards
+                                data={parties}
+                                isDeletable
+                                onClick={handlePartySelect}
+                                onDelete={handlePartyDelete}
+                            />
+                        </div>
+
+                        {/* Formulario para agregar/editar fiesta */}
+                        <form onSubmit={handlePartySubmit}>
+                            <StoreParty form={partyForm} />
                         </form>
-                        <form onSubmit={submitUsers}>
+                        <Modal show={show}>Hola Mundo</Modal>
+                        {/* Drag and Drop para subir archivos */}
+                        <DragNDrop />
+
+                        {/* Formulario para subir usuarios */}
+                        <form onSubmit={handleUserSubmit}>
                             <div>
                                 <InputLabel htmlFor="csv" value="CSV" />
                                 <input
@@ -133,17 +104,20 @@ export default function Dashboard({ parties }) {
                                     name="csv"
                                     id="csv"
                                     onChange={(e) =>
-                                        UserForm.setData("file", e.target.files[0])
+                                        userForm.setData(
+                                            "file",
+                                            e.target.files[0]
+                                        )
                                     }
                                 />
                                 <InputError
-                                    message={UserForm.errors.file}
+                                    message={userForm.errors.file}
                                     className="mt-2"
                                 />
                             </div>
                             <PrimaryButton
                                 className="ms-4"
-                                disabled={UserForm.processing}
+                                disabled={userForm.processing}
                             >
                                 Log in
                             </PrimaryButton>
