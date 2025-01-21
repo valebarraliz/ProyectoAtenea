@@ -47,7 +47,7 @@ const ImageInput = forwardRef((props, ref) => {
                 icon="fa-solid fa-upload"
             />
             <img
-                className="h-full w-full object-scale-down object-center rounded-md"
+                className="h-full w-full aspect-[4/3] object-scale-down object-center rounded-md"
                 src={
                     preview
                         ? preview

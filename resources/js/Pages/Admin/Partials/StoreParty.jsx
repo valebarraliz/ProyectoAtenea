@@ -8,7 +8,7 @@ import SecondaryButton from "@/Components/SecondaryButton";
 
 export default function StoreParty({ form }) {
     return (
-        <div className="mt-6 space-y-12 lg:grid lg:grid-cols-3 lg:gap-x-6 lg:space-y-0 p-2">
+        <div className="py-2">
             <div className="w-full border rounded shadow divide-y p-2 flex flex-col">
                 <div className="flex flex-col p-2">
                     <div className="flex h-52">

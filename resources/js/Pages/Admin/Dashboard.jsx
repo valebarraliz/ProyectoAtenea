@@ -7,11 +7,16 @@ import InputLabel from "@/Components/InputLabel";
 import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
 import Modal from "@/Components/Modal";
+import SelectModal from "@/Components/SelectModal";
 import { useState } from "react";
 
 export default function Dashboard({ parties }) {
-    const [show, setShow] = useState(false);
-    // Formularios
+    const [modals, setModals] = useState({
+        addParty: false,
+        editParty: false,
+        deleteParty: false,
+    });
+
     const partyForm = useForm({
         id: "",
         name: "",
@@ -19,13 +24,14 @@ export default function Dashboard({ parties }) {
         image: null,
     });
 
-    const userForm = useForm({
-        file: null,
-    });
+    const userForm = useForm({ file: null });
 
-    const partyDeleteForm = useForm({ id: "" });
+    // Función para abrir/cerrar modales
+    const toggleModal = (modalName, isOpen) => {
+        setModals((prev) => ({ ...prev, [modalName]: isOpen }));
+    };
 
-    // Función para manejar la selección de una fiesta
+    // Función para seleccionar un partido
     const handlePartySelect = (party) => {
         partyForm.setData({
             id: party.id,
@@ -35,22 +41,27 @@ export default function Dashboard({ parties }) {
         });
     };
 
-    // Función para manejar la eliminación de una fiesta
-    const handlePartyDelete = (partyId) => {
-        partyDeleteForm.setData({ id: partyId });
-        partyDeleteForm.delete(route("party.delete"));
-    };
-
-    // Función para enviar el formulario de fiesta
-    const handlePartySubmit = (e) => {
+    const handleSubmitParty = (e, action) => {
         e.preventDefault();
-        const routeName = partyForm.data.id ? "party.update" : "party.store";
-        const successCallback = () => partyForm.reset();
+        const routeName = action === "create" ? "party.store" : "party.update";
+        const modalName = action === "create" ? "addParty" : "editParty";
 
-        partyForm.post(route(routeName), { onSuccess: successCallback });
+        partyForm.post(route(routeName), {
+            onSuccess: () => {
+                toggleModal(modalName, false);
+                partyForm.reset();
+            },
+        });
     };
 
-    // Función para enviar el formulario de usuarios
+
+    const handleDeleteParty = () => {
+        partyForm.delete(route("party.delete", { id: partyForm.data.id }), {
+            onSuccess: () => partyForm.reset(),
+        });
+    };
+
+    // Función para manejar el envío del formulario de usuarios
     const handleUserSubmit = (e) => {
         e.preventDefault();
         userForm.post(route("user.store"), {
@@ -61,38 +72,97 @@ export default function Dashboard({ parties }) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Admin Dashboard
-                </h2>
+                <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-semibold text-gray-800">
+                        Gestionar Partidos
+                    </h2>
+                    <div>
+                        {!partyForm.data.id ? (
+                            <PrimaryButton
+                                onClick={() => toggleModal("addParty", true)}
+                            >
+                                Agregar
+                            </PrimaryButton>
+                        ) : (
+                            <div className="flex gap-3">
+                                <PrimaryButton
+                                    onClick={() => partyForm.reset()}
+                                >
+                                    Borrar Selección
+                                </PrimaryButton>
+                                <PrimaryButton
+                                    onClick={() =>
+                                        toggleModal("editParty", true)
+                                    }
+                                >
+                                    Modificar
+                                </PrimaryButton>
+                                <PrimaryButton
+                                    onClick={() =>
+                                        toggleModal("deleteParty", true)
+                                    }
+                                >
+                                    Eliminar
+                                </PrimaryButton>
+                            </div>
+                        )}
+                    </div>
+                </div>
             }
         >
             <Head title="Dashboard" />
 
-            <div className="py-12">
+            <div className="py-6">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                    <div className="bg-white shadow-sm sm:rounded-lg">
                         <div className="p-2">
-                            <button
-                                onClick={() => setShow(!show)}
-                                className="p-2 bg-red-200 cursor-pointer"
-                            >
-                                ClickOnME
-                            </button>
-                            {/* Componente de tarjetas */}
+                            {/* Tarjetas de partidos */}
                             <Cards
                                 data={parties}
-                                isDeletable
                                 onClick={handlePartySelect}
-                                onDelete={handlePartyDelete}
+                                selectedId={partyForm.data.id}
                             />
                         </div>
 
-                        {/* Formulario para agregar/editar fiesta */}
-                        <form onSubmit={handlePartySubmit}>
-                            <StoreParty form={partyForm} />
-                        </form>
-                        <Modal show={show}>Hola Mundo</Modal>
-                        {/* Drag and Drop para subir archivos */}
+                        {/* Modal de confirmación de eliminación */}
+                        <SelectModal
+                            title="¿Está seguro de eliminar el partido seleccionado?"
+                            show={modals.deleteParty}
+                            mode="yesno"
+                            required
+                            onClose={() => toggleModal("deleteParty", false)}
+                            onSelect={(confirm) =>
+                                confirm && handleDeleteParty()
+                            }
+                        />
+
+                        {/* Modal de agregar partido */}
+                        <Modal
+                            show={modals.addParty}
+                            onClose={() => {
+                                toggleModal("addParty", false);
+                                partyForm.reset();
+                            }}
+                        >
+                            <form onSubmit={(e) => handleSubmitParty(e, "create")}>
+                                <StoreParty form={partyForm} />
+                            </form>
+                        </Modal>
+
+                        {/* Modal de editar partido */}
+                        <Modal
+                            show={modals.editParty}
+                            onClose={() => {
+                                toggleModal("editParty", false);
+                                partyForm.reset();
+                            }}
+                        >
+                            <form onSubmit={(e) => handleSubmitParty(e, "update")}>
+                                <StoreParty form={partyForm} />
+                            </form>
+                        </Modal>
+
+                        {/* Componente de Drag & Drop */}
                         <DragNDrop />
 
                         {/* Formulario para subir usuarios */}
@@ -119,7 +189,7 @@ export default function Dashboard({ parties }) {
                                 className="ms-4"
                                 disabled={userForm.processing}
                             >
-                                Log in
+                                Subir
                             </PrimaryButton>
                         </form>
                     </div>
