@@ -6,7 +6,7 @@ import TextArea from "@/Components/TextArea";
 import ImageInput from "@/Components/ImageInput";
 import SecondaryButton from "@/Components/SecondaryButton";
 
-export default function StoreParty({ form }) {
+export default function StoreParty({ form, onCancel }) {
     return (
         <div className="py-2">
             <div className="w-full border rounded shadow divide-y p-2 flex flex-col">
@@ -57,8 +57,8 @@ export default function StoreParty({ form }) {
                     <PrimaryButton disabled={form.processing}>
                         Guardar
                     </PrimaryButton>
-                    <SecondaryButton onClick={() => form.reset()}>
-                        Limpiar
+                    <SecondaryButton onClick={onCancel}>
+                        Cancelar
                     </SecondaryButton>
                 </div>
             </div>

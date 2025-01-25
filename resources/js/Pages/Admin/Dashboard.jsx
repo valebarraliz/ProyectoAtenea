@@ -9,6 +9,8 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import Modal from "@/Components/Modal";
 import SelectModal from "@/Components/SelectModal";
 import { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import ActionHeader from "../../Components/ActionHeader";
 
 export default function Dashboard({ parties }) {
     const [modals, setModals] = useState({
@@ -54,7 +56,6 @@ export default function Dashboard({ parties }) {
         });
     };
 
-
     const handleDeleteParty = () => {
         partyForm.delete(route("party.delete", { id: partyForm.data.id }), {
             onSuccess: () => partyForm.reset(),
@@ -72,50 +73,22 @@ export default function Dashboard({ parties }) {
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-semibold text-gray-800">
-                        Gestionar Partidos
-                    </h2>
-                    <div>
-                        {!partyForm.data.id ? (
-                            <PrimaryButton
-                                onClick={() => toggleModal("addParty", true)}
-                            >
-                                Agregar
-                            </PrimaryButton>
-                        ) : (
-                            <div className="flex gap-3">
-                                <PrimaryButton
-                                    onClick={() => partyForm.reset()}
-                                >
-                                    Borrar Selección
-                                </PrimaryButton>
-                                <PrimaryButton
-                                    onClick={() =>
-                                        toggleModal("editParty", true)
-                                    }
-                                >
-                                    Modificar
-                                </PrimaryButton>
-                                <PrimaryButton
-                                    onClick={() =>
-                                        toggleModal("deleteParty", true)
-                                    }
-                                >
-                                    Eliminar
-                                </PrimaryButton>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                <ActionHeader
+                    title="Gestionar Partidos"
+                    isItemSelected={partyForm.data.id}
+                    onAdd={() => toggleModal("addParty", true)}
+                    onResetSelection={() => partyForm.reset()}
+                    onEdit={() => toggleModal("editParty", true)}
+                    onDelete={() => toggleModal("deleteParty", true)}
+                />
             }
         >
             <Head title="Dashboard" />
 
             <div className="py-6">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-2">
+                    <div className="bg-white shadow-sm sm:rounded-lg pb-6 pt-2">
+                        <div className="px-6">
                             {/* Tarjetas de partidos */}
                             <Cards
                                 data={parties}
@@ -144,8 +117,16 @@ export default function Dashboard({ parties }) {
                                 partyForm.reset();
                             }}
                         >
-                            <form onSubmit={(e) => handleSubmitParty(e, "create")}>
-                                <StoreParty form={partyForm} />
+                            <form
+                                onSubmit={(e) => handleSubmitParty(e, "create")}
+                            >
+                                <StoreParty
+                                    form={partyForm}
+                                    onCancel={() => {
+                                        toggleModal("addParty", false);
+                                        partyForm.reset();
+                                    }}
+                                />
                             </form>
                         </Modal>
 
@@ -157,41 +138,18 @@ export default function Dashboard({ parties }) {
                                 partyForm.reset();
                             }}
                         >
-                            <form onSubmit={(e) => handleSubmitParty(e, "update")}>
-                                <StoreParty form={partyForm} />
+                            <form
+                                onSubmit={(e) => handleSubmitParty(e, "update")}
+                            >
+                                <StoreParty
+                                    form={partyForm}
+                                    onCancel={() => {
+                                        toggleModal("editParty", false);
+                                        partyForm.reset();
+                                    }}
+                                />
                             </form>
                         </Modal>
-
-                        {/* Componente de Drag & Drop */}
-                        <DragNDrop />
-
-                        {/* Formulario para subir usuarios */}
-                        <form onSubmit={handleUserSubmit}>
-                            <div>
-                                <InputLabel htmlFor="csv" value="CSV" />
-                                <input
-                                    type="file"
-                                    name="csv"
-                                    id="csv"
-                                    onChange={(e) =>
-                                        userForm.setData(
-                                            "file",
-                                            e.target.files[0]
-                                        )
-                                    }
-                                />
-                                <InputError
-                                    message={userForm.errors.file}
-                                    className="mt-2"
-                                />
-                            </div>
-                            <PrimaryButton
-                                className="ms-4"
-                                disabled={userForm.processing}
-                            >
-                                Subir
-                            </PrimaryButton>
-                        </form>
                     </div>
                 </div>
             </div>

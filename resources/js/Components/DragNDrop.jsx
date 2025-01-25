@@ -1,49 +1,59 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 
-export default function DragNDrop() {
-    const [file, setFile] = useState(null);
+export default forwardRef(function DragNDrop({ onFileChange }, ref) {
+    const [name, setName] = useState("");
     const [error, setError] = useState(null);
 
-    // Validación del archivo CSV
-    const validateFile = (file) => {
-        const allowedTypes = ["text/csv"];
-        const allowedExtensions = [".csv"];
+    const allowedTypes = ["text/csv"];
+    const allowedExtensions = [".csv"];
 
-        const fileType = file.type;
-        const fileExtension = file.name.split(".").pop();
-
-        if (!allowedTypes.includes(fileType) && !allowedExtensions.includes(`.${fileExtension}`)) {
+    // Validación de archivo
+    const isFileValid = (file) => {
+        const fileExtension = `.${file.name.split(".").pop().toLowerCase()}`;
+        if (
+            !allowedTypes.includes(file.type) &&
+            !allowedExtensions.includes(fileExtension)
+        ) {
             setError("Por favor, sube un archivo CSV válido.");
             return false;
         }
-        setError(null); // Limpiar mensaje de error si es válido
+        setError(null); // Limpiar error si es válido
         return true;
     };
 
-    const handleFileChange = (e) => {
-        const selectedFile = e.target.files[0];
-        if (selectedFile && validateFile(selectedFile)) {
-            setFile(selectedFile);
+    const handleFileSelection = (selectedFile) => {
+        if (selectedFile && isFileValid(selectedFile)) {
+            setName(selectedFile.name);
+            onFileChange(selectedFile);
         }
     };
+
+    const handleFileChange = (e) => handleFileSelection(e.target.files[0]);
 
     const handleDrop = (e) => {
         e.preventDefault();
-        const droppedFile = e.dataTransfer.files[0];
-        if (droppedFile && validateFile(droppedFile)) {
-            setFile(droppedFile);
-        }
+        handleFileSelection(e.dataTransfer.files[0]);
     };
 
-    const handleDragOver = (e) => {
-        e.preventDefault();
-    };
+    const handleDragOver = (e) => e.preventDefault();
+
+    // Exponer el método `reset` para limpiar el estado
+    useImperativeHandle(ref, () => ({
+        reset() {
+            setName(""); // Limpiar nombre del archivo
+            setError(null); // Limpiar errores
+            onFileChange(null); // Notificar al padre que no hay archivo seleccionado
+        },
+    }));
 
     return (
         <div className="col-span-full">
-            <label htmlFor="cover-photo" className="block text-sm font-medium text-gray-900">
-                Subir usuarios
+            <label
+                htmlFor="cover-photo"
+                className="block text-md font-medium text-gray-900"
+            >
+                Importar Usuarios
             </label>
             <div
                 className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10"
@@ -63,7 +73,6 @@ export default function DragNDrop() {
                             <span>Sube un archivo</span>
                             <input
                                 id="file-upload"
-                                name="file-upload"
                                 type="file"
                                 className="sr-only"
                                 onChange={handleFileChange}
@@ -73,12 +82,16 @@ export default function DragNDrop() {
                     </div>
                     <p className="text-xs text-gray-600">Sólo se admite CSV</p>
 
-                    {file && !error && (
-                        <p className="mt-2 text-sm text-green-500">Archivo cargado: {file.name}</p>
+                    {name && !error && (
+                        <p className="mt-2 text-sm text-green-500">
+                            Archivo cargado: {name}
+                        </p>
                     )}
-                    {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+                    {error && (
+                        <p className="mt-2 text-sm text-red-500">{error}</p>
+                    )}
                 </div>
             </div>
         </div>
     );
-}
+});

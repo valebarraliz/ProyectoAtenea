@@ -51,7 +51,7 @@ export default function Modal({
                         className="relative transform overflow-hidden rounded-lg bg-white shadow-xl p-6 transition-all"
                     >
                         {/* Botón de cierre */}
-                        <FontAwesomeIcon icon="fa-regular fa-circle-xmark" onClick={close} className='text-2xl flex absolute top-0 right-0 p-1 cursor-pointer text-black hover:text-black/60 active:text-black/80'/>
+                        <FontAwesomeIcon icon="fa-solid fa-square-xmark" onClick={close} className='text-2xl flex absolute top-0 right-0 p-1 cursor-pointer text-black hover:text-black/60 active:text-black/80'/>
 
                         {/* Contenido del modal */}
                         {children}

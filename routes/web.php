@@ -12,6 +12,7 @@ use App\Http\Controllers\ProfileController;
 Route::get('/', [VoteController::class,'index'])->name('welcome');
 
 Route::get('/dashboard', [RoleController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/users', [UserController::class, 'index'])->middleware(['auth', 'verified'])->name('users');
 Route::post('/party-store', [PartyController::class, 'store'])->name('party.store');
 Route::post('/party-update', [PartyController::class, 'update'])->name('party.update');
 Route::delete('/party-delete', [PartyController::class, 'delete'])->name('party.delete');
@@ -23,6 +24,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 Route::get('/token', function () {
-    return csrf_token(); 
+    return csrf_token();
 });
 require __DIR__ . '/auth.php';

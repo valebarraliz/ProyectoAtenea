@@ -10,6 +10,11 @@ use Inertia\Inertia;
 
 class UserController extends Controller
 {
+    public function index()
+    {
+        return Inertia::render('Admin/ManageUsers');
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -44,7 +49,7 @@ class UserController extends Controller
 
             DB::commit();
 
-            return to_route('dashboard')->with('success', 'Archivo importado exitosamente.');
+            return to_route('users')->with('success', 'Archivo importado exitosamente.');
         } catch (\Exception $e) {
             DB::rollBack();
 
