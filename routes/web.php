@@ -7,12 +7,16 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\PartyController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DatabaseController;
 
 
 Route::get('/', [VoteController::class,'index'])->name('welcome');
 
 Route::get('/dashboard', [RoleController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('/users', [UserController::class, 'index'])->middleware(['auth', 'verified'])->name('users');
+Route::get('/database', [DatabaseController::class, 'index'])->middleware(['auth', 'verified'])->name('database');
+Route::get('/discardVotes', [VoteController::class, 'discardVotes'])->middleware(['auth', 'verified'])->name('discardVotes');
+
 Route::post('/party-store', [PartyController::class, 'store'])->name('party.store');
 Route::post('/party-update', [PartyController::class, 'update'])->name('party.update');
 Route::delete('/party-delete', [PartyController::class, 'delete'])->name('party.delete');

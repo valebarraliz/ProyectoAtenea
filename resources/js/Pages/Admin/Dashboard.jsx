@@ -2,10 +2,6 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import Cards from "@/Components/Cards";
 import StoreParty from "./Partials/StoreParty";
-import DragNDrop from "@/Components/DragNDrop";
-import InputLabel from "@/Components/InputLabel";
-import InputError from "@/Components/InputError";
-import PrimaryButton from "@/Components/PrimaryButton";
 import Modal from "@/Components/Modal";
 import SelectModal from "@/Components/SelectModal";
 import { useState } from "react";
@@ -25,8 +21,6 @@ export default function Dashboard({ parties }) {
         description: "",
         image: null,
     });
-
-    const userForm = useForm({ file: null });
 
     // Función para abrir/cerrar modales
     const toggleModal = (modalName, isOpen) => {
@@ -59,14 +53,6 @@ export default function Dashboard({ parties }) {
     const handleDeleteParty = () => {
         partyForm.delete(route("party.delete", { id: partyForm.data.id }), {
             onSuccess: () => partyForm.reset(),
-        });
-    };
-
-    // Función para manejar el envío del formulario de usuarios
-    const handleUserSubmit = (e) => {
-        e.preventDefault();
-        userForm.post(route("user.store"), {
-            onSuccess: () => userForm.reset(),
         });
     };
 

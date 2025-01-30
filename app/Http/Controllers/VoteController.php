@@ -13,7 +13,7 @@ class VoteController extends Controller
 {
     public function index()
     {
-        $votes = Vote::with('party')
+        $votes = Vote::with('party')->where('discarded','!=',true)
             ->selectRaw('party_id, COUNT(*) as vote_count')
             ->groupBy('party_id')
             ->get();
@@ -51,4 +51,10 @@ class VoteController extends Controller
         event(new VoteCast($request->party_id, $partyName, $voteCount));
         return redirect()->intended(route('dashboard'));;
     }
+    public function discardVotes(){
+        Vote::query()->where('discarded', '!=', true)
+        ->update(['discarded' => true]);
+        return to_route('database')->with('success', 'Se han descartado los votos.');
+    }
+
 }

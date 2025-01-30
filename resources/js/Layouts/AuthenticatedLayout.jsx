@@ -12,6 +12,7 @@ function NavigationLinks({ role }) {
 
     const adminLinks = [
         { name: 'Manage Users', route: 'users' },
+        { name: 'Manage Database', route: 'database' },
     ];
 
     const userLinks = [
