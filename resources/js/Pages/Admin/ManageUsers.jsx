@@ -6,55 +6,66 @@ import DragNDrop from "@/Components/DragNDrop";
 import ActionHeader from "../../Components/ActionHeader";
 import FlashMessage from "@/Components/FlashMessage";
 import Table from "@/Components/Table";
-import { faHomeLgAlt } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import TextInput from "@/Components/TextInput";
 
 export default function ManageUsers() {
-    const dragNDropRef = useRef(null); // Referencia al componente DragNDrop
+    const dragNDropRef = useRef(null);
     const userForm = useForm({ file: null });
-    const { flash, errors, users } = usePage().props; // Desestructuración directa de props
+    const { flash, users } = usePage().props;
     const [userList, setUserList] = useState(users);
-    const [successMessage, setSuccessMessage] = useState(null); // Estado para el mensaje de éxito
-    const [errorMessage, setErrorMessage] = useState(null); // Estado para el mensaje de éxito
-    // Manejo del envío del formulario
+    const [filteredUsers, setFilteredUsers] = useState(users);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [errorMessage, setErrorMessage] = useState(null);
+
     const handleUserSubmit = (e) => {
         e.preventDefault();
         userForm.post(route("user.store"), {
             onSuccess: () => {
                 userForm.reset();
                 if (dragNDropRef.current?.reset) {
-                    dragNDropRef.current.reset(); // Llamar al método reset si existe
+                    dragNDropRef.current.reset();
                 }
             },
         });
     };
+
     const getUserList = async () => {
         try {
             const response = await axios.get(route("user.get"));
-            setUserList(response.data); // Extraer los datos directamente
+            setUserList(response.data);
+            setFilteredUsers(response.data);
         } catch (error) {
             setErrorMessage(error);
         }
     };
-    // Actualizar el mensaje de éxito cuando cambie el flash
+
     useEffect(() => {
         if (flash?.success) {
             setSuccessMessage(flash.success);
             getUserList();
         }
         if (flash?.error) {
-            setErrorMessage(flash?.error);
+            setErrorMessage(flash.error);
         }
         if (userForm.errors.file) {
             setErrorMessage(userForm.errors.file);
         }
-    }, [
-        flash?.success,
-        flash?.success_timestamp,
-        flash?.error,
-        flash?.error_timestamp,
-        userForm.errors,
-    ]);
+    }, [flash, userForm.errors]);
+
+    useEffect(() => {
+        setFilteredUsers(
+            userList.filter((user) =>
+                Object.values(user).some((value) =>
+                    value
+                        ?.toString()
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase())
+                )
+            )
+        );
+    }, [searchTerm, userList]);
 
     const columns = [
         { key: "citizen_number", label: "Cédula" },
@@ -84,22 +95,19 @@ export default function ManageUsers() {
             <div className="py-6">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
                     <div className="bg-white shadow-sm sm:rounded-lg p-6">
-                        {/* Componente para mostrar el mensaje de éxito */}
                         <FlashMessage
                             message={successMessage}
                             type="success"
-                            onHide={() => setSuccessMessage(null)} // Limpiar el mensaje
+                            onHide={() => setSuccessMessage(null)}
                         />
                         <FlashMessage
                             message={errorMessage}
                             type="error"
-                            onHide={() => setErrorMessage(null)} // Limpiar el mensaje
+                            onHide={() => setErrorMessage(null)}
                         />
-
-                        {/* Formulario para subir usuarios */}
                         <form onSubmit={handleUserSubmit}>
                             <DragNDrop
-                                ref={dragNDropRef} // Pasar la referencia al componente
+                                ref={dragNDropRef}
                                 onFileChange={(file) =>
                                     userForm.setData("file", file)
                                 }
@@ -113,15 +121,19 @@ export default function ManageUsers() {
                         </form>
                     </div>
                     <div className="bg-white shadow-sm sm:rounded-lg p-6 space-y-3">
-                        <label
-                            htmlFor="cover-photo"
-                            className="block text-md font-medium text-gray-900"
-                        >
+                        <span className="block text-md font-medium text-gray-900">
                             Usuarios
-                        </label>
+                        </span>
+                        <TextInput
+                            id="search"
+                            placeholder="Buscar usuario..."
+                            className="w-full"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                         <Table
                             columns={columns}
-                            data={userList}
+                            data={filteredUsers}
                             actions={actions}
                         />
                     </div>

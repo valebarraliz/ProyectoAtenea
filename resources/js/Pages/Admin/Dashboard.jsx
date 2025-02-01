@@ -5,7 +5,7 @@ import StoreParty from "./Partials/StoreParty";
 import Modal from "@/Components/Modal";
 import SelectModal from "@/Components/SelectModal";
 import { useState, useCallback } from "react";
-import ActionHeader from "../../Components/ActionHeader";
+import ActionHeader from "@/Components/ActionHeader";
 
 export default function Dashboard({ parties }) {
     const [modals, setModals] = useState({

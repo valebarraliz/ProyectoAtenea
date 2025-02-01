@@ -12,11 +12,13 @@ class UserController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Admin/ManageUsers', ['users' => $this->getUsers()]);
+        $users = $this->getUsers();
+        return Inertia::render('Admin/ManageUsers', compact('users'));
     }
 
     public function store(Request $request)
     {
+        // Validación de la carga del archivo
         $request->validate([
             'file' => ['required', 'file'],
         ]);
@@ -30,9 +32,7 @@ class UserController extends Controller
         $cedulaIndex = array_search('cedula', $header);
 
         if ($nameIndex === false || $cedulaIndex === false) {
-            return redirect()->back()
-                ->with('error', 'El archivo CSV debe contener las columnas "nombre" y "cedula".')
-                ->with('error_timestamp', now()->timestamp);
+            return $this->redirectWithError('El archivo CSV debe contener las columnas "nombre" y "cedula".');
         }
 
         DB::beginTransaction();
@@ -47,9 +47,7 @@ class UserController extends Controller
             return to_route('users')->with('success', 'Archivo importado exitosamente.')->with('success_timestamp', now()->timestamp);
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()
-                ->with('error', $e->getMessage())
-                ->with('error_timestamp', now()->timestamp);
+            return $this->redirectWithError($e->getMessage());
         }
     }
 
@@ -70,14 +68,16 @@ class UserController extends Controller
             User::create([
                 'name' => $name,
                 'citizen_number' => $citizenNumber,
-                'password' => Hash::make($citizenNumber)
+                'password' => Hash::make($citizenNumber),
             ]);
         }
     }
 
+    /**
+     * Obtiene los usuarios activos que no tienen rol de administrador.
+     */
     public function getUsers()
     {
-        // Obtén los usuarios de la base de datos
         return User::where('discarded', '!=', true)
             ->where('role_id', '!=', 1)
             ->get(); // Respuesta como array
@@ -88,23 +88,37 @@ class UserController extends Controller
         $request->validate([
             'id' => ['required', 'integer'],
         ]);
-        try {
 
-            $user = User::find($request->id);
+        try {
+            $user = User::findOrFail($request->id);
             $user->update(['force_password_reset' => true]);
 
-            return to_route('users')->with('success', 'El usuario ' . $user->name . ' ha sido recuperado.')->with('success_timestamp', now()->timestamp);
+            return to_route('users')->with('success', "El usuario {$user->name} ha sido recuperado.")->with('success_timestamp', now()->timestamp);
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', $e->getMessage())
-                ->with('error_timestamp', now()->timestamp);
+            return $this->redirectWithError('Hubo un error al intentar recuperar el usuario.');
         }
     }
 
     public function discardUsers()
     {
-        User::query()->where('discarded', '!=', true)->where('role_id', '!=', 1)
+        User::query()
+            ->where('discarded', '!=', true)
+            ->where('role_id', '!=', 1)
             ->update(['discarded' => true]);
+
         return to_route('database')->with('success', 'Se han descartado los usuarios.')->with('success_timestamp', now()->timestamp);
+    }
+
+    /**
+     * Redirige con un mensaje de error.
+     *
+     * @param string $message
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    private function redirectWithError(string $message)
+    {
+        return redirect()->back()
+            ->with('error', $message)
+            ->with('error_timestamp', now()->timestamp);
     }
 }

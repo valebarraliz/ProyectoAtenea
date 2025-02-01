@@ -10,4 +10,8 @@ class Party extends Model
     /** @use HasFactory<\Database\Factories\PartyFactory> */
     use HasFactory;
     protected $guarded = [];
+
+    public function votes(){
+        return $this->hasMany(Vote::class);
+    }
 }
