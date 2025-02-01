@@ -13,7 +13,7 @@ class VoteController extends Controller
 {
     public function index()
     {
-        $votes = Vote::with('party')->where('discarded','!=',true)
+        $votes = Vote::with('party')->where('discarded', '!=', true)
             ->selectRaw('party_id, COUNT(*) as vote_count')
             ->groupBy('party_id')
             ->get();
@@ -33,13 +33,15 @@ class VoteController extends Controller
             'phpVersion' => PHP_VERSION,
         ]);
     }
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         $request->validate([
-            'party_id'=>['required','integer','exists:parties,id']
+            'party_id' => ['required', 'integer', 'exists:parties,id']
         ]);
-        if(count($request->user()->vote)){
-            if(!$request->user()->vote->last()->discarded){
-               return redirect()->back()->with('error', 'You have voted');
+        if (count($request->user()->vote)) {
+            if (!$request->user()->vote->last()->discarded) {
+                return redirect()->back()->with('error', 'Ya ha votado')->with('error_timestamp', now()->timestamp);
+
             }
         }
         $vote = Vote::create([
@@ -49,12 +51,12 @@ class VoteController extends Controller
         $partyName = $vote->party->name;
         $voteCount = Vote::where('party_id', $request->party_id)->count();
         event(new VoteCast($request->party_id, $partyName, $voteCount));
-        return redirect()->intended(route('dashboard'));;
+        return redirect()->back()->with('success', 'Se ha enviado su voto')->with('success_timestamp', now()->timestamp);
     }
-    public function discardVotes(){
+    public function discardVotes()
+    {
         Vote::query()->where('discarded', '!=', true)
-        ->update(['discarded' => true]);
-        return to_route('database')->with('success', 'Se han descartado los votos.');
+            ->update(['discarded' => true]);
+        return to_route('database')->with('success', 'Se han descartado los votos.')->with('success_timestamp', now()->timestamp);
     }
-
 }

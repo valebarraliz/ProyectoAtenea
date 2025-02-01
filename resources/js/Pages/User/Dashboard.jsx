@@ -1,16 +1,43 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, useForm } from "@inertiajs/react";
+import { Head, useForm, usePage } from "@inertiajs/react";
+import { useState, useEffect } from "react";
 import Cards from "@/Components/Cards";
+import FlashMessage from "@/Components/FlashMessage";
+import SelectModal from "@/Components/SelectModal";
 
 export default function Dashboard({ parties }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        party_id: "",
+    const { flash } = usePage().props;
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [errorMessage, setErrorMessage] = useState(null); // Estado para el mensaje de éxito
+    const { data, setData, post, reset } = useForm({ party_id: "" });
+    const [modals, setModals] = useState({
+        selectParty: false,
     });
 
-    const submit = (e) => {
-        setData("party_id", e.id);
-        post(route("vote.store"));
+    // Función para abrir/cerrar modales
+    const toggleModal = (modalName, isOpen) => {
+        setModals((prev) => ({ ...prev, [modalName]: isOpen }));
     };
+
+    const handlePartySelection = (party) => {
+        setData("party_id", party.id);
+        toggleModal("selectParty", true);
+    };
+
+    const handleVoteSubmission = () => {
+        post(route("vote.store"), { onSuccess: reset });
+    };
+
+    // Actualizar el mensaje de éxito cuando cambie el flash
+    useEffect(() => {
+        if (flash?.success) {
+            setSuccessMessage(flash.success);
+        }
+        if (flash?.error) {
+            setErrorMessage(flash?.error);
+        }
+    }, [flash?.success, flash?.error, flash?.error_timestamp]);
+
     return (
         <AuthenticatedLayout
             header={
@@ -21,15 +48,30 @@ export default function Dashboard({ parties }) {
         >
             <Head title="Dashboard" />
 
-            <div className="py-12">
+            <div className="py-6">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            <Cards
-                                data={parties}
-                                onClick={submit}
-                            />
-                        </div>
+                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg p-6 text-gray-900">
+                        <SelectModal
+                            title="¿Desea votar por el partido seleccionado?"
+                            show={modals.selectParty}
+                            mode="yesno"
+                            required
+                            onClose={() => toggleModal("selectParty", false)}
+                            onSelect={(confirm) =>
+                                confirm && handleVoteSubmission()
+                            }
+                        />
+                        <FlashMessage
+                            message={successMessage}
+                            type="success"
+                            onHide={() => setSuccessMessage(null)} // Limpiar el mensaje
+                        />
+                        <FlashMessage
+                            message={errorMessage}
+                            type="error"
+                            onHide={() => setErrorMessage(null)} // Limpiar el mensaje
+                        />
+                        <Cards data={parties} onClick={handlePartySelection} />
                     </div>
                 </div>
             </div>

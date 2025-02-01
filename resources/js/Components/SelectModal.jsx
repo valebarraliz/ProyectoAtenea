@@ -3,7 +3,7 @@ import { Fragment, useState, useEffect } from "react";
 import SecondaryButton from "./SecondaryButton";
 import PrimaryButton from "./PrimaryButton";
 
-export default function UnifiedSelectModal({
+export default function SelectModal({
     title = "Selecciona una opción",
     options = [],
     selectedOption = null,

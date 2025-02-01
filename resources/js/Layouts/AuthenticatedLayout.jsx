@@ -15,13 +15,9 @@ function NavigationLinks({ role }) {
         { name: 'Manage Database', route: 'database' },
     ];
 
-    const userLinks = [
-        { name: 'My Profile', route: 'welcome' },
-    ];
-
     const links = role === 1
         ? [...commonLinks, ...adminLinks]
-        : [...commonLinks, ...userLinks];
+        : commonLinks;
 
     return links.map((link) => (
         <NavLink

@@ -12,6 +12,7 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         if ($request->user()) {
+
             switch ($request->user()->role_id) {
                 case 1:
                     $parties = Party::all();
@@ -19,7 +20,7 @@ class RoleController extends Controller
                         'parties' => $parties
                     ]);
                 case 2:
-                    $parties = Party::all();
+                    $parties = Party::where('discarded', '!=', true)->get();
                     return Inertia::render('User/Dashboard', [
                         'parties' => $parties,
                     ]);

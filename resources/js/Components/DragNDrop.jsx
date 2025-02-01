@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle, useState, useRef } from "react";
 
 export default forwardRef(function DragNDrop({ onFileChange }, ref) {
     const [name, setName] = useState("");
@@ -7,6 +7,7 @@ export default forwardRef(function DragNDrop({ onFileChange }, ref) {
 
     const allowedTypes = ["text/csv"];
     const allowedExtensions = [".csv"];
+    const fileInputRef = useRef(null); // Ref para el input de archivo
 
     // Validación de archivo
     const isFileValid = (file) => {
@@ -44,6 +45,11 @@ export default forwardRef(function DragNDrop({ onFileChange }, ref) {
             setName(""); // Limpiar nombre del archivo
             setError(null); // Limpiar errores
             onFileChange(null); // Notificar al padre que no hay archivo seleccionado
+
+            // Limpiar el input de archivo
+            if (fileInputRef.current) {
+                fileInputRef.current.value = null; // Limpiar el input de tipo file
+            }
         },
     }));
 
@@ -72,6 +78,7 @@ export default forwardRef(function DragNDrop({ onFileChange }, ref) {
                         >
                             <span>Sube un archivo</span>
                             <input
+                                ref={fileInputRef} // Referencia al input de archivo
                                 id="file-upload"
                                 type="file"
                                 className="sr-only"

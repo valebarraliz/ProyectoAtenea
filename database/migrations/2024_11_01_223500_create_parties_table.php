@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('parties', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('description');
             $table->string('image');
+            $table->boolean('discarded')->default(false);
+            $table->boolean('iswinner')->default(false);
             $table->timestamps();
         });
     }

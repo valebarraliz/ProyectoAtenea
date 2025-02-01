@@ -10,22 +10,29 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DatabaseController;
 
 
-Route::get('/', [VoteController::class,'index'])->name('welcome');
+Route::get('/', [VoteController::class, 'index'])->name('welcome');
 
-Route::get('/dashboard', [RoleController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
-Route::get('/users', [UserController::class, 'index'])->middleware(['auth', 'verified'])->name('users');
-Route::get('/database', [DatabaseController::class, 'index'])->middleware(['auth', 'verified'])->name('database');
-Route::get('/discardVotes', [VoteController::class, 'discardVotes'])->middleware(['auth', 'verified'])->name('discardVotes');
-
-Route::post('/party-store', [PartyController::class, 'store'])->name('party.store');
-Route::post('/party-update', [PartyController::class, 'update'])->name('party.update');
-Route::delete('/party-delete', [PartyController::class, 'delete'])->name('party.delete');
-Route::post('/user', [UserController::class, 'store'])->name('user.store');
-Route::middleware('auth')->group(function () {
-    Route::post('/vote', [VoteController::class,'store'])->name('vote.store');
+Route::middleware(['auth', 'verified', 'discarded'])->group(function () {
+    Route::middleware(['admin'])->group(function () {
+        Route::get('/users', [UserController::class, 'index'])->name('users');
+        Route::get('/database', [DatabaseController::class, 'index'])->name('database');
+        Route::get('/databaseDelete', [DatabaseController::class, 'delete'])->name('database.delete');
+        Route::get('/discardVotes', [VoteController::class, 'discardVotes'])->name('discardVotes');
+        Route::get('/discardUsers', [UserController::class, 'discardUsers'])->name('discardUsers');
+        Route::get('/discardParties', [PartyController::class, 'discardParties'])->name('discardParties');
+        Route::post('/party-store', [PartyController::class, 'store'])->name('party.store');
+        Route::post('/party-update', [PartyController::class, 'update'])->name('party.update');
+        Route::put('/party-discard', [PartyController::class, 'discardPartyById'])->name('party.discard');
+        Route::put('/party-recover', [PartyController::class, 'recoverPartyById'])->name('party.recover');
+        Route::post('/user', [UserController::class, 'store'])->name('user.store');
+        Route::get('/getusers', [UserController::class, 'getUsers'])->name('user.get');
+        Route::put('/recoveruser', [UserController::class, 'recoverUser'])->name('user.recover');
+    });
+    Route::post('/vote', [VoteController::class, 'store'])->name('vote.store');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/dashboard', [RoleController::class, 'index'])->name('dashboard');
 });
 Route::get('/token', function () {
     return csrf_token();

@@ -1,15 +1,19 @@
 import { useRef, useEffect, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, useForm, usePage } from "@inertiajs/react";
+import { Head, useForm, usePage, router } from "@inertiajs/react";
 import PrimaryButton from "@/Components/PrimaryButton";
 import DragNDrop from "@/Components/DragNDrop";
 import ActionHeader from "../../Components/ActionHeader";
 import FlashMessage from "@/Components/FlashMessage";
+import Table from "@/Components/Table";
+import { faHomeLgAlt } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
 
 export default function ManageUsers() {
     const dragNDropRef = useRef(null); // Referencia al componente DragNDrop
     const userForm = useForm({ file: null });
-    const { flash, errors } = usePage().props; // Desestructuración directa de props
+    const { flash, errors, users } = usePage().props; // Desestructuración directa de props
+    const [userList, setUserList] = useState(users);
     const [successMessage, setSuccessMessage] = useState(null); // Estado para el mensaje de éxito
     const [errorMessage, setErrorMessage] = useState(null); // Estado para el mensaje de éxito
     // Manejo del envío del formulario
@@ -24,16 +28,51 @@ export default function ManageUsers() {
             },
         });
     };
-
+    const getUserList = async () => {
+        try {
+            const response = await axios.get(route("user.get"));
+            setUserList(response.data); // Extraer los datos directamente
+        } catch (error) {
+            setErrorMessage(error);
+        }
+    };
     // Actualizar el mensaje de éxito cuando cambie el flash
     useEffect(() => {
         if (flash?.success) {
             setSuccessMessage(flash.success);
+            getUserList();
         }
-        if (errors?.file) {
-            setErrorMessage(errors?.file);
+        if (flash?.error) {
+            setErrorMessage(flash?.error);
         }
-    }, [flash?.success, errors?.file]);
+        if (userForm.errors.file) {
+            setErrorMessage(userForm.errors.file);
+        }
+    }, [
+        flash?.success,
+        flash?.success_timestamp,
+        flash?.error,
+        flash?.error_timestamp,
+        userForm.errors,
+    ]);
+
+    const columns = [
+        { key: "citizen_number", label: "Cédula" },
+        { key: "name", label: "Nombre" },
+        { key: "email", label: "Correo Electrónico" },
+    ];
+
+    const recoverUser = (row) => {
+        router.put(route("user.recover"), { id: row.id });
+    };
+
+    const actions = [
+        {
+            label: "Recuperar",
+            onClick: recoverUser,
+            disabled: (row) => row.force_password_reset,
+        },
+    ];
 
     return (
         <AuthenticatedLayout
@@ -43,7 +82,7 @@ export default function ManageUsers() {
         >
             <Head title="Gestionar Usuarios" />
             <div className="py-6">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
                     <div className="bg-white shadow-sm sm:rounded-lg p-6">
                         {/* Componente para mostrar el mensaje de éxito */}
                         <FlashMessage
@@ -72,6 +111,19 @@ export default function ManageUsers() {
                                 Subir
                             </PrimaryButton>
                         </form>
+                    </div>
+                    <div className="bg-white shadow-sm sm:rounded-lg p-6 space-y-3">
+                        <label
+                            htmlFor="cover-photo"
+                            className="block text-md font-medium text-gray-900"
+                        >
+                            Usuarios
+                        </label>
+                        <Table
+                            columns={columns}
+                            data={userList}
+                            actions={actions}
+                        />
                     </div>
                 </div>
             </div>

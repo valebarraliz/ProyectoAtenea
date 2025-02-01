@@ -5,9 +5,9 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
-
-class Admin
+class EnsureNotDiscarded
 {
     /**
      * Handle an incoming request.
@@ -16,9 +16,10 @@ class Admin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth()->user()->role_id == 1) {
+        if (!Auth::user()->discarded) {
             return $next($request);
         }
+        Auth::logout();
         abort(401);
     }
 }

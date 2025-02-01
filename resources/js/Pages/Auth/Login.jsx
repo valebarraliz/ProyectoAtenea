@@ -42,7 +42,6 @@ export default function Login({ status, canResetPassword }) {
                         value={data.input_type}
                         className="mt-1 block w-full"
                         autoComplete="username"
-                        isFocused={true}
                         onChange={(e) => setData("input_type", e.target.value)}
                     />
 
