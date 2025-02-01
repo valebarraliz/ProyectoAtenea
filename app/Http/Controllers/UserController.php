@@ -19,8 +19,6 @@ class UserController extends Controller
     {
         $request->validate([
             'file' => ['required', 'file'],
-        ], [
-            'file.required' => 'Es obligatorio subir un archivo'
         ]);
 
         $file = $request->file('file');
