@@ -17,10 +17,23 @@ class UpdateInformationController extends Controller
     }
     public function update(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'email' => ['required', 'email', 'confirmed'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
-        ]);
+        $validated = $request->validate(
+            [
+                'email' => ['required', 'email', 'confirmed'],
+                'password' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'max:16',
+                    'regex:/[a-z]/',
+                    'regex:/[A-Z]/',
+                    'regex:/[0-9]/',
+                    'regex:/[@$!%*?&]/',
+                    'confirmed'
+                ]
+            ],
+            ['password.regex' => 'La contraseña debe contener al menos una letra mayúscula, una letra minúscula, un número y un carácter especial.']
+        );
 
         $request->user()->update([
             'email' => $validated['email'],

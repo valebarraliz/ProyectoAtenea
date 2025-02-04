@@ -211,5 +211,7 @@ return [
         'vote' => 'voto',
         'partyName' => 'nombre_del_partido',
         'voteCount' => 'conteo_de_votos',
+        'password'=>'contraseña',
+        'email'=>'correo'
         ],
 ];

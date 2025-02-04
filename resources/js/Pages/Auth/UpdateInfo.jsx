@@ -31,7 +31,7 @@ export default function ForgotPassword({ status }) {
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
+                    <InputLabel htmlFor="email" value="Correo" />
                     <TextInput
                         id="email"
                         type="email"
@@ -47,7 +47,7 @@ export default function ForgotPassword({ status }) {
                 <div class="mt-2">
                     <InputLabel
                         htmlFor="email_confirmation"
-                        value="Confirm Email"
+                        value="Confirmar Correo"
                     />
                     <TextInput
                         id="email_confirmation"
@@ -67,7 +67,7 @@ export default function ForgotPassword({ status }) {
                     />
                 </div>
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                    <InputLabel htmlFor="password" value="Contraseña" />
 
                     <TextInput
                         id="password"
@@ -86,7 +86,7 @@ export default function ForgotPassword({ status }) {
                 <div className="mt-4">
                     <InputLabel
                         htmlFor="password_confirmation"
-                        value="Confirm Password"
+                        value="Confirmar Contraseña"
                     />
 
                     <TextInput
@@ -108,7 +108,7 @@ export default function ForgotPassword({ status }) {
                 </div>
                 <div className="mt-4 flex items-center justify-end">
                     <PrimaryButton className="ms-4" disabled={processing}>
-                        Save
+                        Guardar
                     </PrimaryButton>
                 </div>
             </form>

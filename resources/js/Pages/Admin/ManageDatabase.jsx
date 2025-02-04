@@ -47,10 +47,10 @@ export default function ManageDatabase() {
                             </PrimaryButton>
                         </div>
                     {[
-                        { title: "Descartar Usuarios", description: "Evita que usuarios anteriores envíen votos.", action: "discardUsers" },
-                        { title: "Descartar Partidos", description: "Elimina los partidos actuales para agregar nuevos.", action: "discardParties" },
-                        { title: "Descartar Votos", description: "Elimina los votos anteriores para una nueva votación.", action: "discardVotes" },
-                        { title: "Eliminar Base De Datos", description: "Borra todos los registros de la base de datos.", action: "databaseDelete" }
+                        { title: "Descartar Usuarios", description: "Evita que usuarios anteriores envíen votos.", action: "user.discard" },
+                        { title: "Descartar Partidos", description: "Elimina los partidos actuales para agregar nuevos.", action: "party.discard" },
+                        { title: "Descartar Votos", description: "Elimina los votos anteriores para una nueva votación.", action: "vote.discard" },
+                        { title: "Eliminar Base De Datos", description: "Borra todos los registros de la base de datos.", action: "database.delete" }
                     ].map(({ title, description, action }) => (
                         <div key={action} className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                             <h2 className="text-lg font-medium text-gray-900">{title}</h2>
