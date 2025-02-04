@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Party;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use App\Events\PartyCast;
 
 class PartyController extends Controller
 {
@@ -42,15 +44,10 @@ class PartyController extends Controller
                 $party->save();
             }
 
-            return redirect()->route('dashboard')
-                ->with('success', 'El partido ' . $party->name . ' ha sido creado correctamente.')
-                ->with('success_timestamp', now()->timestamp);
-
+            return $this->redirectWithMessage('success', 'El partido ' . $party->name . ' ha sido creado correctamente.');
         } catch (\Exception $e) {
             Log::error('Error al crear el partido: ' . $e->getMessage());
-
-            return redirect()->back()->with('error', 'Ocurrió un error al crear el partido.')
-                ->with('error_timestamp', now()->timestamp);
+            return $this->redirectWithMessage('error', 'Ocurrió un error al crear el partido.');
         }
     }
 
@@ -66,9 +63,7 @@ class PartyController extends Controller
             'id' => ['required', 'integer'],
             'name' => ['required', 'string'],
             'description' => ['required', 'string'],
-            'image' => ['nullable', 'image'],
         ]);
-
         try {
             $party = Party::findOrFail($request->id);
             $party->update(['name' => $request->name, 'description' => $request->description]);
@@ -81,15 +76,10 @@ class PartyController extends Controller
                 $party->save();
             }
 
-            return redirect()->route('dashboard')
-                ->with('success', 'El partido ' . $party->name . ' ha sido actualizado correctamente.')
-                ->with('success_timestamp', now()->timestamp);
-
+            return $this->redirectWithMessage('success', 'El partido ' . $party->name . ' ha sido actualizado correctamente.');
         } catch (\Exception $e) {
             Log::error('Error al actualizar el partido: ' . $e->getMessage());
-
-            return redirect()->back()->with('error', 'Ocurrió un error al actualizar el partido.')
-                ->with('error_timestamp', now()->timestamp);
+            return $this->redirectWithMessage('error', 'Ocurrió un error al actualizar el partido.');
         }
     }
 
@@ -107,17 +97,12 @@ class PartyController extends Controller
 
         try {
             $party = Party::findOrFail($request->id);
-            $party->update(['discarded' => true]);
+            $party->update(['discarded' => true, 'iswinner' => false]);
 
-            return redirect()->route('dashboard')
-                ->with('success', 'Se ha descartado el partido ' . $party->name)
-                ->with('success_timestamp', now()->timestamp);
-
+            return $this->redirectWithMessage('success', 'Se ha descartado el partido ' . $party->name);
         } catch (\Exception $e) {
             Log::error('Error al descartar el partido: ' . $e->getMessage());
-
-            return redirect()->back()->with('error', 'Ocurrió un error al descartar el partido.')
-                ->with('error_timestamp', now()->timestamp);
+            return $this->redirectWithMessage('error', 'Ocurrió un error al descartar el partido.');
         }
     }
 
@@ -137,15 +122,10 @@ class PartyController extends Controller
             $party = Party::findOrFail($request->id);
             $party->update(['discarded' => false]);
 
-            return redirect()->route('dashboard')
-                ->with('success', 'Se ha recuperado el partido ' . $party->name)
-                ->with('success_timestamp', now()->timestamp);
-
+            return $this->redirectWithMessage('success', 'Se ha recuperado el partido ' . $party->name);
         } catch (\Exception $e) {
             Log::error('Error al recuperar el partido: ' . $e->getMessage());
-
-            return redirect()->back()->with('error', 'Ocurrió un error al recuperar el partido.')
-                ->with('error_timestamp', now()->timestamp);
+            return $this->redirectWithMessage('error', 'Ocurrió un error al recuperar el partido.');
         }
     }
 
@@ -158,17 +138,12 @@ class PartyController extends Controller
     {
         try {
             Party::query()->where('discarded', '!=', true)
-                ->update(['discarded' => true]);
+                ->update(['discarded' => true, 'iswinner' => false]);
 
-            return redirect()->route('database')
-                ->with('success', 'Se han descartado todos los partidos.')
-                ->with('success_timestamp', now()->timestamp);
-
+            return $this->redirectWithMessage('success', 'Se han descartado todos los partidos.');
         } catch (\Exception $e) {
             Log::error('Error al descartar todos los partidos: ' . $e->getMessage());
-
-            return redirect()->back()->with('error', 'Ocurrió un error al descartar los partidos.')
-                ->with('error_timestamp', now()->timestamp);
+            return $this->redirectWithMessage('error', 'Ocurrió un error al descartar los partidos.');
         }
     }
 
@@ -188,15 +163,10 @@ class PartyController extends Controller
             $party = Party::findOrFail($request->id);
             $party->delete();
 
-            return redirect()->route('dashboard')
-                ->with('success', 'Se ha eliminado el partido ' . $party->name)
-                ->with('success_timestamp', now()->timestamp);
-
+            return $this->redirectWithMessage('success', 'Se ha eliminado el partido ' . $party->name);
         } catch (\Exception $e) {
             Log::error('Error al eliminar el partido: ' . $e->getMessage());
-
-            return redirect()->back()->with('error', 'Ocurrió un error al eliminar el partido.')
-                ->with('error_timestamp', now()->timestamp);
+            return $this->redirectWithMessage('error', 'Ocurrió un error al eliminar el partido.');
         }
     }
 
@@ -211,32 +181,89 @@ class PartyController extends Controller
     }
 
     /**
+     * Obtiene el partido ganador.
+     *
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function getWinningParty()
+    {
+        $party = Party::where('iswinner', '!=', false)->where('discarded', '!=', true)->first();
+        if ($party) {
+            // Agregar la cantidad de votos al objeto del partido
+            $party->votes_count = $party->votes()->where('discarded', false)->count();
+            if ($party->votes_count) {
+                return $party;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Selecciona el partido ganador basado en los votos.
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function selectWinningParty(Request $request)
+    public function selectWinningParty()
     {
-        $request->validate([
-            'id' => ['required', 'integer'],
-        ]);
+        // Usar una transacción para garantizar la atomicidad
+        DB::beginTransaction();
 
-        $parties = Party::where('discarded', false)->get();
-        $maxVotes = $parties->max('votes');
-        $winningParties = $parties->filter(function ($party) use ($maxVotes) {
-            return $party->votes === $maxVotes;
-        });
+        try {
+            // Obtener todos los partidos no descartados
+            $parties = Party::where('discarded', false)->get();
 
-        if ($winningParties->count() > 1) {
-            return redirect()->back()->with('error', 'Hay varios partidos con la misma cantidad de votos.')
-                ->with('error_timestamp', now()->timestamp);
+            // Encontrar el número máximo de votos
+            $maxVotes = $parties->max('votes');
+
+            // Filtrar los partidos con el máximo de votos
+            $winningParties = $parties->filter(function ($party) use ($maxVotes) {
+                return $party->votes === $maxVotes;
+            });
+
+            // Si hay más de un partido con el máximo de votos, retornar un error
+            if ($winningParties->count() > 1) {
+                DB::rollBack();
+                return $this->redirectWithMessage('error', 'Hay varios partidos con la misma cantidad de votos.');
+            }
+
+            // Seleccionar el partido ganador
+            $winningParty = $winningParties->first();
+
+            // Marcar el partido como ganador
+            $winningParty->update(['iswinner' => true]);
+
+            // Descartar todos los demás partidos
+            Party::where('discarded', false)
+                ->where('id', '!=', $winningParty->id)
+                ->update(['discarded' => true]);
+
+            // Confirmar la transacción
+            DB::commit();
+            $winningParty->votes_count = $winningParty->votes()->where('discarded', false)->count();
+            event(new PartyCast($winningParty));
+            // Retornar un mensaje de éxito
+            return $this->redirectWithMessage('success', 'Se ha elegido el partido ganador correctamente.');
+        } catch (\Exception $e) {
+            // Revertir la transacción en caso de error
+            DB::rollBack();
+            Log::error('Error al seleccionar el partido ganador: ' . $e->getMessage());
+            return $this->redirectWithMessage('error', 'Ocurrió un error al seleccionar el partido ganador.');
         }
+    }
 
-        $winningParty = $winningParties->first();
-        $winningParty->update(['iswinner' => true]);
-
-        return redirect()->back()->with('success', 'Se ha elegido el partido ganador')
-            ->with('success_timestamp', now()->timestamp);
+    /**
+     * Método genérico para redireccionar con mensajes de éxito o error.
+     *
+     * @param string $type Tipo de mensaje (success o error).
+     * @param string $message Contenido del mensaje.
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    private function redirectWithMessage($type, $message)
+    {
+        return redirect()->back()
+            ->with($type, $message)
+            ->with($type . '_timestamp', now()->timestamp);
     }
 }

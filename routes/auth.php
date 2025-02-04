@@ -13,7 +13,7 @@ use App\Http\Controllers\Auth\UpdateInformationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
+    Route::get('register', [RegisteredUserController::class, 'create'])->middleware('auth')
         ->name('register');
 
     Route::post('register', [RegisteredUserController::class, 'store']);
@@ -54,7 +54,7 @@ Route::middleware('auth')->group(function () {
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 
     Route::get('update-info', [UpdateInformationController::class, 'index'])->name('info');
-    
+
     Route::put('update-info', [UpdateInformationController::class, 'update'])->name('info.update');
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');

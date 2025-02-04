@@ -7,12 +7,12 @@ import { useState } from 'react';
 
 function NavigationLinks({ role }) {
     const commonLinks = [
-        { name: 'Dashboard', route: 'dashboard' },
+        { name: 'Inicio', route: 'dashboard' },
     ];
 
     const adminLinks = [
-        { name: 'Manage Users', route: 'users' },
-        { name: 'Manage Database', route: 'database' },
+        { name: 'Usuarios', route: 'users' },
+        { name: 'Base De Datos', route: 'database' },
     ];
 
     const links = role === 1
@@ -54,9 +54,9 @@ function DropdownMenu({ user }) {
                 </button>
             </Dropdown.Trigger>
             <Dropdown.Content>
-                <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
+                <Dropdown.Link href={route('profile.edit')}>Perfil</Dropdown.Link>
                 <Dropdown.Link href={route('logout')} method="post" as="button">
-                    Log Out
+                    Cerrar sesión
                 </Dropdown.Link>
             </Dropdown.Content>
         </Dropdown>
@@ -101,7 +101,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         {/* Left Side */}
                         <div className="flex">
                             <Link href="/" className="flex shrink-0 items-center">
-                                <ApplicationLogo className="h-9 w-auto text-gray-800" />
+                                <ApplicationLogo className="h-14 w-auto text-gray-800" />
                             </Link>
                             <div className="hidden sm:ml-10 sm:flex sm:space-x-8">
                                 <NavigationLinks role={user.role_id} />

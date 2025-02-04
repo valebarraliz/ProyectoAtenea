@@ -39,13 +39,19 @@ class DatabaseController extends Controller
             Party::query()->delete();
 
             // Mensaje de éxito
-            return redirect()->back()->with('success', 'Base de datos eliminada correctamente.');
+            return $this->redirectWithMessage('success', 'Base de datos eliminada correctamente.');
         } catch (\Exception $e) {
             // Registrar el error
             Log::error('Error al eliminar la base de datos: ' . $e->getMessage());
 
             // Mensaje de error
-            return redirect()->back()->with('error', 'Ocurrió un error al intentar eliminar la base de datos.');
+            return $this->redirectWithMessage('error', 'Ocurrió un error al intentar eliminar la base de datos.');
         }
+    }
+    private function redirectWithMessage($type, $message)
+    {
+        return redirect()->back()
+            ->with($type, $message)
+            ->with($type . '_timestamp', now()->timestamp);
     }
 }

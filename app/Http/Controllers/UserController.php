@@ -10,12 +10,23 @@ use Inertia\Inertia;
 
 class UserController extends Controller
 {
+    /**
+     * Muestra la vista de gestión de usuarios.
+     *
+     * @return \Inertia\Response
+     */
     public function index()
     {
         $users = $this->getUsers();
         return Inertia::render('Admin/ManageUsers', compact('users'));
     }
 
+    /**
+     * Importa usuarios desde un archivo CSV.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
         // Validación de la carga del archivo
@@ -32,7 +43,7 @@ class UserController extends Controller
         $cedulaIndex = array_search('cedula', $header);
 
         if ($nameIndex === false || $cedulaIndex === false) {
-            return $this->redirectWithError('El archivo CSV debe contener las columnas "nombre" y "cedula".');
+            return $this->redirectWithMessage('error', 'El archivo CSV debe contener las columnas "nombre" y "cedula".');
         }
 
         DB::beginTransaction();
@@ -44,15 +55,19 @@ class UserController extends Controller
             }
 
             DB::commit();
-            return to_route('users')->with('success', 'Archivo importado exitosamente.')->with('success_timestamp', now()->timestamp);
+            return $this->redirectWithMessage('success', 'Archivo importado exitosamente.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->redirectWithError($e->getMessage());
+            return $this->redirectWithMessage('error', 'Ocurrió un error al importar el archivo: ' . $e->getMessage());
         }
     }
 
     /**
      * Crea un nuevo usuario o reactiva uno descartado si ya existe.
+     *
+     * @param string $name
+     * @param string $citizenNumber
+     * @throws \Exception
      */
     private function createOrUpdateUser(string $name, string $citizenNumber)
     {
@@ -75,14 +90,22 @@ class UserController extends Controller
 
     /**
      * Obtiene los usuarios activos que no tienen rol de administrador.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getUsers()
     {
         return User::where('discarded', '!=', true)
             ->where('role_id', '!=', 1)
-            ->get(); // Respuesta como array
+            ->get();
     }
 
+    /**
+     * Recupera un usuario descartado.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function recoverUser(Request $request)
     {
         $request->validate([
@@ -93,32 +116,42 @@ class UserController extends Controller
             $user = User::findOrFail($request->id);
             $user->update(['force_password_reset' => true]);
 
-            return to_route('users')->with('success', "El usuario {$user->name} ha sido recuperado.")->with('success_timestamp', now()->timestamp);
+            return $this->redirectWithMessage('success', "El usuario {$user->name} ha sido recuperado.");
         } catch (\Exception $e) {
-            return $this->redirectWithError('Hubo un error al intentar recuperar el usuario.');
+            return $this->redirectWithMessage('error', 'Hubo un error al intentar recuperar el usuario.');
         }
     }
 
+    /**
+     * Descarta todos los usuarios no descartados (excepto administradores).
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function discardUsers()
     {
-        User::query()
-            ->where('discarded', '!=', true)
-            ->where('role_id', '!=', 1)
-            ->update(['discarded' => true]);
+        try {
+            User::query()
+                ->where('discarded', '!=', true)
+                ->where('role_id', '!=', 1)
+                ->update(['discarded' => true]);
 
-        return to_route('database')->with('success', 'Se han descartado los usuarios.')->with('success_timestamp', now()->timestamp);
+            return $this->redirectWithMessage('success', 'Se han descartado los usuarios.');
+        } catch (\Exception $e) {
+            return $this->redirectWithMessage('error', 'Ocurrió un error al descartar los usuarios.');
+        }
     }
 
     /**
-     * Redirige con un mensaje de error.
+     * Método genérico para redireccionar con mensajes de éxito o error.
      *
-     * @param string $message
+     * @param string $type Tipo de mensaje (success o error).
+     * @param string $message Contenido del mensaje.
      * @return \Illuminate\Http\RedirectResponse
      */
-    private function redirectWithError(string $message)
+    private function redirectWithMessage($type, $message)
     {
         return redirect()->back()
-            ->with('error', $message)
-            ->with('error_timestamp', now()->timestamp);
+            ->with($type, $message)
+            ->with($type . '_timestamp', now()->timestamp);
     }
 }

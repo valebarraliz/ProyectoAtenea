@@ -11,6 +11,7 @@ use App\Http\Controllers\DatabaseController;
 
 
 Route::get('/', [VoteController::class, 'index'])->name('welcome');
+Route::get('/party-get', [PartyController::class, 'getWinningParty'])->name('party.get');
 
 Route::middleware(['auth', 'verified', 'discarded'])->group(function () {
     Route::middleware(['admin'])->group(function () {
@@ -22,6 +23,7 @@ Route::middleware(['auth', 'verified', 'discarded'])->group(function () {
         Route::get('/discardParties', [PartyController::class, 'discardParties'])->name('discardParties');
         Route::post('/party-store', [PartyController::class, 'store'])->name('party.store');
         Route::post('/party-update', [PartyController::class, 'update'])->name('party.update');
+        Route::get('/party-select', [PartyController::class, 'selectWinningParty'])->name('party.select');
         Route::put('/party-discard', [PartyController::class, 'discardPartyById'])->name('party.discard');
         Route::put('/party-recover', [PartyController::class, 'recoverPartyById'])->name('party.recover');
         Route::post('/user', [UserController::class, 'store'])->name('user.store');
