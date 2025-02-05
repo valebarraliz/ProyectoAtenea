@@ -1,4 +1,9 @@
-export default function Cards({ data, onClick, selectedId }) {
+export default function Cards({
+    data,
+    onClick,
+    selectedId,
+    showSelection = false,
+}) {
     return (
         <div className="mt-6 space-y-12 lg:grid lg:grid-cols-3 lg:gap-x-6 lg:space-y-0 gap-4">
             {data.map((callout) => (
@@ -7,8 +12,12 @@ export default function Cards({ data, onClick, selectedId }) {
                     className={`${callout.discarded && "bg-gray-100"}`}
                 >
                     <div
-                        className={`group relative rounded-md p-2 border divide-y shadow ${callout.discarded && "opacity-70 outline-gray-300"} ${
+                        className={`group relative rounded-md p-2 border divide-y shadow ${
+                            callout.discarded && "opacity-70 outline-gray-300"
+                        } ${
                             selectedId === callout.id && "outline"
+                        } ${
+                            showSelection && "focus:outline active:outline"
                         } outline-blue-200 cursor-pointer`}
                         tabIndex="-1"
                         onClick={() => onClick(callout)}

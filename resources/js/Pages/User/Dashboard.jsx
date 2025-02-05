@@ -71,7 +71,7 @@ export default function Dashboard({ parties }) {
                             type="error"
                             onHide={() => setErrorMessage(null)} // Limpiar el mensaje
                         />
-                        <Cards data={parties} onClick={handlePartySelection} />
+                        <Cards data={parties} onClick={handlePartySelection} showSelection/>
                     </div>
                 </div>
             </div>
