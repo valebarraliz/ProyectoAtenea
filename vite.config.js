@@ -10,15 +10,15 @@ export default defineConfig({
         }),
         react(),
     ],
-    server: {
-        host: "0.0.0.0", // Forzar a usar la IP de WSL
-        port: 5173, // Puerto de Vite
-        strictPort: true,
-        cors: {
-            origin: "http://192.168.120.173:8000", // Permitir Laravel acceder a Vite
-            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            allowedHeaders: ["Content-Type", "Authorization"],
-            credentials: true,
-        },
-    },
+    // server: {
+    //     host: "0.0.0.0", // Forzar a usar la IP de WSL
+    //     port: 5173, // Puerto de Vite
+    //     strictPort: true,
+    //     cors: {
+    //         origin: "http://192.168.1.77:8000", // Permitir Laravel acceder a Vite
+    //         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    //         allowedHeaders: ["Content-Type", "Authorization"],
+    //         credentials: true,
+    //     },
+    // },
 });
